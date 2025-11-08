@@ -14,11 +14,12 @@ export const config = {
   //     primary: "",
   //   },
   google: {
-    clientId: "",
-    analyticsId: "",
+    clientId:
+      "850623390361-vku6t3u5qc95vbi53ktgd6ue9551oucd.apps.googleusercontent.com",
+    analyticsId: ""
   },
   keys: {
-    access: "YOUTUTOR__ACCESS__TOKEN",
+    access: "YOUTUTOR__ACCESS__TOKEN"
   },
-  baseURL: import.meta.env.VITE_API_URL,
+  baseURL: import.meta.env.VITE_API_URL
 };

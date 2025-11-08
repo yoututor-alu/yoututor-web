@@ -1,13 +1,20 @@
 import React from "react";
-import { Menu, Settings, UserCircle2 } from "lucide-react";
+import { Menu, Settings, LogOut } from "lucide-react";
 import { useNavigate } from "@tanstack/react-router";
+import {
+  Menu as ChakraMenu,
+  MenuButton,
+  MenuList,
+  MenuItem
+} from "@chakra-ui/react";
+import UserAvatar from "./UserAvatar";
+import { useWrapperContext } from "./Wrapper";
 
 interface ChatHeaderProps {
   title?: string;
   subtitle?: string;
   onOpenHistory?: () => void;
   onToggleSidebar?: () => void;
-  onOpenSettings?: () => void;
   showMenuButton?: boolean;
   showSettingsButton?: boolean;
   rightSlot?: React.ReactNode;
@@ -18,12 +25,16 @@ const ChatHeader = ({
   subtitle,
   onOpenHistory,
   onToggleSidebar,
-  onOpenSettings,
   showMenuButton = true,
   showSettingsButton = true,
   rightSlot
 }: ChatHeaderProps) => {
   const navigate = useNavigate();
+  const { handleLogout } = useWrapperContext();
+
+  const handleSettingsClick = () => {
+    navigate({ to: "/settings" });
+  };
 
   const handleMenuClick = () => {
     if (onToggleSidebar) {
@@ -54,28 +65,54 @@ const ChatHeader = ({
             >
               YouTutor
             </p>
-            <h1 className="text-2xl font-semibold text-deepNavy">{title}</h1>
+            <h1 className="hidden sm:block text-2xl font-semibold text-deepNavy">
+              {title}
+            </h1>
             {subtitle && (
-              <p className="text-sm text-deepNavy/70 mt-1">{subtitle}</p>
+              <p className="hidden sm:block text-sm text-deepNavy/70 mt-1">
+                {subtitle}
+              </p>
             )}
           </div>
         </div>
 
         {rightSlot ??
           (showSettingsButton && (
-            <div className="flex items-center gap-3">
-              <button
-                type="button"
-                onClick={onOpenSettings}
-                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-white border border-gray/30 text-deepNavy shadow-sm hover:bg-[#BDF0E6] transition"
+            <ChakraMenu>
+              <MenuButton
+                as="button"
+                className="focus:outline-none focus:ring-2 focus:ring-deepNavy/20 rounded-full"
               >
-                <Settings className="h-4 w-4" />
-                Settings
-              </button>
-              <div className="h-11 w-11 rounded-2xl bg-white border border-gray/30 flex items-center justify-center shadow-md">
-                <UserCircle2 className="h-6 w-6 text-deepNavy" />
-              </div>
-            </div>
+                <UserAvatar className="cursor-pointer hover:ring-2 hover:ring-deepNavy/20 transition" />
+              </MenuButton>
+              <MenuList
+                minW="180px"
+                bg="white"
+                border="1px solid"
+                borderColor="rgba(0, 0, 0, 0.1)"
+                borderRadius="xl"
+                boxShadow="lg"
+                p={1}
+                zIndex={50}
+              >
+                <MenuItem
+                  onClick={handleSettingsClick}
+                  className="flex items-center gap-2"
+                  _hover={{ bg: "#BDF0E6" }}
+                >
+                  <Settings className="h-4 w-4" />
+                  <span>Settings</span>
+                </MenuItem>
+                <MenuItem
+                  onClick={handleLogout}
+                  className="flex items-center gap-2"
+                  _hover={{ bg: "red.50", color: "red.600" }}
+                >
+                  <LogOut className="h-4 w-4" />
+                  <span>Logout</span>
+                </MenuItem>
+              </MenuList>
+            </ChakraMenu>
           ))}
       </div>
     </header>

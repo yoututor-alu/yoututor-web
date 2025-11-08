@@ -1,4 +1,3 @@
-import { Link } from "@tanstack/react-router";
 import LandingHero from "../components/LandingHero";
 import FeatureSection from "../components/FeatureSection";
 import FooterBar from "../components/FooterBar";
