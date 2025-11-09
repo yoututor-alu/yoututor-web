@@ -14,7 +14,8 @@ import { Route as LoginRouteImport } from './routes/login'
 import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout.settings'
-import { Route as LayoutChatRouteImport } from './routes/_layout.chat'
+import { Route as LayoutChatIndexRouteImport } from './routes/_layout.chat.index'
+import { Route as LayoutChatIdRouteImport } from './routes/_layout.chat.$id'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -40,48 +41,57 @@ const LayoutSettingsRoute = LayoutSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutChatRoute = LayoutChatRouteImport.update({
-  id: '/chat',
-  path: '/chat',
+const LayoutChatIndexRoute = LayoutChatIndexRouteImport.update({
+  id: '/chat/',
+  path: '/chat/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutChatIdRoute = LayoutChatIdRouteImport.update({
+  id: '/chat/$id',
+  path: '/chat/$id',
   getParentRoute: () => LayoutRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/chat': typeof LayoutChatRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
+  '/chat/$id': typeof LayoutChatIdRoute
+  '/chat': typeof LayoutChatIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/chat': typeof LayoutChatRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
+  '/chat/$id': typeof LayoutChatIdRoute
+  '/chat': typeof LayoutChatIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_layout': typeof LayoutRouteWithChildren
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
-  '/_layout/chat': typeof LayoutChatRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
+  '/_layout/chat/$id': typeof LayoutChatIdRoute
+  '/_layout/chat/': typeof LayoutChatIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/register' | '/chat' | '/settings' | '/'
+  fullPaths: '/login' | '/register' | '/settings' | '/' | '/chat/$id' | '/chat'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/register' | '/chat' | '/settings' | '/'
+  to: '/login' | '/register' | '/settings' | '/' | '/chat/$id' | '/chat'
   id:
     | '__root__'
     | '/_layout'
     | '/login'
     | '/register'
-    | '/_layout/chat'
     | '/_layout/settings'
     | '/_layout/'
+    | '/_layout/chat/$id'
+    | '/_layout/chat/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -127,26 +137,35 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutSettingsRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/chat': {
-      id: '/_layout/chat'
+    '/_layout/chat/': {
+      id: '/_layout/chat/'
       path: '/chat'
       fullPath: '/chat'
-      preLoaderRoute: typeof LayoutChatRouteImport
+      preLoaderRoute: typeof LayoutChatIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/chat/$id': {
+      id: '/_layout/chat/$id'
+      path: '/chat/$id'
+      fullPath: '/chat/$id'
+      preLoaderRoute: typeof LayoutChatIdRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
 }
 
 interface LayoutRouteChildren {
-  LayoutChatRoute: typeof LayoutChatRoute
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
+  LayoutChatIdRoute: typeof LayoutChatIdRoute
+  LayoutChatIndexRoute: typeof LayoutChatIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
-  LayoutChatRoute: LayoutChatRoute,
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
+  LayoutChatIdRoute: LayoutChatIdRoute,
+  LayoutChatIndexRoute: LayoutChatIndexRoute,
 }
 
 const LayoutRouteWithChildren =

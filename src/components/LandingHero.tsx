@@ -1,11 +1,64 @@
+import { useMutation } from "@apollo/client";
 import { useNavigate } from "@tanstack/react-router";
 import { ArrowRight, Youtube } from "lucide-react";
 import { useState } from "react";
+import {
+  CREATE_SESSION,
+  type CreateSessionInput,
+  type CreateSessionResponse
+} from "../api/mutations/session";
+import {
+  handleErrorMessage,
+  handleResponseErrors
+} from "../utilities/error-handling";
+import { useRecoilState } from "recoil";
+import { currentSessionState, sessionListState } from "../resources/session";
+import { extractYouTubeVideoId } from "../utilities/youtube";
+import { Spinner } from "@chakra-ui/react";
 
 const LandingHero = () => {
   const navigate = useNavigate();
 
   const [url, setUrl] = useState("");
+
+  const [, setCurrentSession] = useRecoilState(currentSessionState);
+
+  const [, setSessions] = useRecoilState(sessionListState);
+
+  const [createSession, createSessionResult] = useMutation<
+    CreateSessionResponse,
+    CreateSessionInput
+  >(CREATE_SESSION);
+
+  const handleCreateSession = async (input: CreateSessionInput["input"]) => {
+    try {
+      const response = await createSession({ variables: { input } });
+
+      if (response.errors) {
+        return handleResponseErrors(response);
+      }
+
+      if (!response.data?.createSession) {
+        return;
+      }
+
+      setCurrentSession(response.data.createSession);
+
+      setSessions(sessions => {
+        return {
+          ...sessions,
+          list: [response.data!.createSession, ...sessions.list]
+        };
+      });
+
+      navigate({
+        to: "/chat/$id",
+        params: { id: response.data.createSession.id }
+      });
+    } catch (error) {
+      handleErrorMessage(error);
+    }
+  };
 
   return (
     <section className="w-full max-w-4xl mx-auto text-center">
@@ -57,14 +110,32 @@ const LandingHero = () => {
           </div>
           <button
             disabled={!url.trim()}
+            onClick={async () => {
+              const video = extractYouTubeVideoId(url);
+
+              if (!video) {
+                return handleErrorMessage("Invalid YouTube Link");
+              }
+
+              return await handleCreateSession({ video });
+            }}
             className={`px-8 py-4 rounded-xl font-semibold transition-all duration-200 flex items-center justify-center gap-2 whitespace-nowrap ${
               url.trim()
                 ? "bg-deepNavy text-white hover:opacity-90 shadow-lg hover:shadow-xl"
                 : "bg-deepNavy/40 text-white cursor-not-allowed"
             }`}
           >
-            Get Started
-            <ArrowRight className="size-5" />
+            {createSessionResult.loading ? (
+              <>
+                Processing
+                <Spinner />
+              </>
+            ) : (
+              <>
+                Get Started
+                <ArrowRight className="size-5" />
+              </>
+            )}
           </button>
         </div>
       </div>

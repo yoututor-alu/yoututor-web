@@ -6,7 +6,7 @@ import SessionHistorySidebar from "../components/HistoryDrawer";
 import { useWrapperContext } from "../components/Wrapper";
 
 const MainLayout = () => {
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const isHomePage = location.pathname === "/";
 

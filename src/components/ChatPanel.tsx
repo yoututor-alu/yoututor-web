@@ -1,79 +1,152 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowUpRight, Send, Trash2 } from "lucide-react";
-
-interface Message {
-  id: string;
-  role: "user" | "assistant";
-  content: string;
-  timestamp: string;
-}
+import { useRecoilState } from "recoil";
+import { currentSessionState } from "../resources/session";
+import { MessageRole } from "../interfaces/session";
+import dayjs from "dayjs";
+import { useMutation } from "@apollo/client";
+import {
+  SEND_MESSAGE,
+  type SendMessageInput,
+  type SendMessageResponse
+} from "../api/mutations/session";
+import {
+  handleErrorMessage,
+  handleResponseErrors
+} from "../utilities/error-handling";
+import MessageContent from "./MessageContent";
 
 interface ChatPanelProps {
   className?: string;
 }
 
-const createId = () => Math.random().toString(36).slice(2, 10);
-
-const initialMessages: Message[] = [
-  {
-    id: "1",
-    role: "assistant",
-    content: "Hi! I'm YouTutor. Drop a question about this video and I'll guide you through the key ideas, offer summaries, and point out must-know concepts.",
-    timestamp: "09:02"
-  },
-  {
-    id: "2",
-    role: "user",
-    content: "Can you outline the main steps covered in this tutorial?",
-    timestamp: "09:05"
-  },
-  {
-    id: "3",
-    role: "assistant",
-    content: "Absolutely! The speaker breaks the workflow into four parts: planning, scripting, recording, and editing. Each section includes practical tips that I'll list as we dive deeper.",
-    timestamp: "09:05"
-  }
-];
+// Typing indicator component with animated dots
+const TypingIndicator = () => {
+  return (
+    <div className="max-w-xl mr-auto">
+      <div className="rounded-2xl px-5 py-4 shadow-sm border border-gray/20 bg-[#fafafa] text-deepNavy">
+        <div className="flex items-center gap-1.5">
+          <span className="typing-dot w-2 h-2 bg-deepNavy/60 rounded-full" />
+          <span className="typing-dot w-2 h-2 bg-deepNavy/60 rounded-full" />
+          <span className="typing-dot w-2 h-2 bg-deepNavy/60 rounded-full" />
+        </div>
+      </div>
+    </div>
+  );
+};
 
 const ChatPanel = ({ className = "" }: ChatPanelProps) => {
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [session, setSession] = useRecoilState(currentSessionState);
+
+  const [isSending, setIsSending] = useState(false);
+
+  const [sendMessage] = useMutation<SendMessageResponse, SendMessageInput>(
+    SEND_MESSAGE
+  );
+
   const [input, setInput] = useState("");
+
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     if (scrollRef.current) {
       scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
     }
-  }, [messages]);
+  }, [session.messages, isSending]);
 
-  const handleSend = () => {
-    if (!input.trim()) return;
+  const handleSendMessage = async (input: SendMessageInput["input"]) => {
+    try {
+      const response = await sendMessage({ variables: { input } });
 
-    const userMessage: Message = {
-      id: createId(),
-      role: "user",
-      content: input.trim(),
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    };
+      if (response.errors) {
+        handleResponseErrors(response);
+        return null;
+      }
 
-    const assistantMessage: Message = {
-      id: createId(),
-      role: "assistant",
-      content: "Here's a thoughtful response from YouTutor explaining the concept and linking it back to the video.",
-      timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })
-    };
+      if (!response.data?.sendMessage) {
+        return null;
+      }
 
-    setMessages(prev => [...prev, userMessage, assistantMessage]);
-    setInput("");
+      return response.data.sendMessage.messages.slice(-2);
+    } catch (error) {
+      handleErrorMessage(error);
+      return null;
+    }
   };
 
+  const handleSend = async () => {
+    if (!input.trim()) {
+      return;
+    }
+
+    const userMessageContent = input.trim();
+
+    const tempID = `temp-user-${Date.now()}`;
+
+    setInput("");
+
+    // Add user message immediately
+    setSession(session => ({
+      ...session,
+      messages: [
+        ...session.messages,
+        {
+          id: tempID,
+          content: userMessageContent,
+          model: "user",
+          role: MessageRole.User,
+          createdAt: new Date()
+        }
+      ]
+    }));
+
+    setIsSending(true);
+
+    const messages = await handleSendMessage({
+      content: userMessageContent,
+      id: session.id
+    });
+
+    if (messages === null) {
+      setIsSending(false);
+      return;
+    }
+
+    // Update messages with the response from the server
+    setTimeout(() => {
+      setSession(session => {
+        const sessionMessages = [...session.messages];
+
+        // Update the last message (user message) with server data (proper ID)
+        sessionMessages[sessionMessages.length - 1] = messages[0];
+
+        // Add the assistant response as a new message
+        sessionMessages.push(messages[1]);
+
+        return {
+          ...session,
+          messages: sessionMessages
+        };
+      });
+      setIsSending(false);
+    }, 500);
+  };
+
+  const messages = useMemo(() => {
+    return session.messages;
+  }, [session.messages]);
+
   return (
-    <section className={`bg-white rounded-3xl shadow-xl border border-gray/30 flex flex-col h-full ${className}`}>
+    <section
+      className={`bg-white rounded-3xl shadow-xl border border-gray/30 flex flex-col max-h-[800px] ${className}`}
+    >
       <div className="flex items-center justify-between px-8 py-6 border-b border-gray/30">
         <div>
           <h2 className="text-xl font-semibold text-deepNavy">Lesson Chat</h2>
-          <p className="text-gray text-sm">Ask anything about the video. I'll answer in context.</p>
+          <p className="text-gray text-sm">
+            Ask anything about the video. I'll answer in context.
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -95,7 +168,10 @@ const ChatPanel = ({ className = "" }: ChatPanelProps) => {
         </div>
       </div>
 
-      <div ref={scrollRef} className="flex-1 overflow-y-auto px-8 py-6 space-y-4">
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto px-8 py-6 space-y-4 min-h-0"
+      >
         <AnimatePresence initial={false}>
           {messages.map(message => (
             <motion.div
@@ -104,18 +180,40 @@ const ChatPanel = ({ className = "" }: ChatPanelProps) => {
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2 }}
-              className={`max-w-xl ${message.role === "user" ? "ml-auto" : "mr-auto"}`}
+              className={`max-w-xl ${message.role === MessageRole.User ? "ml-auto" : "mr-auto"}`}
             >
               <div
                 className={`rounded-2xl px-5 py-4 shadow-sm border border-gray/20 ${
-                  message.role === "user" ? "bg-[#BDF0E6] text-deepNavy" : "bg-[#fafafa] text-deepNavy"
+                  message.role === MessageRole.User
+                    ? "bg-[#BDF0E6] text-deepNavy"
+                    : "bg-[#fafafa] text-deepNavy"
                 }`}
               >
-                <p className="leading-relaxed">{message.content}</p>
+                {message.role === MessageRole.User ? (
+                  <p className="leading-relaxed whitespace-pre-wrap">
+                    {message.content}
+                  </p>
+                ) : (
+                  <MessageContent content={message.content} />
+                )}
               </div>
-              <p className="text-xs text-gray mt-2 text-right">{message.timestamp}</p>
+              <p className="text-xs text-gray mt-2 text-right">
+                {dayjs(message.createdAt).format("hh:mm A")}
+              </p>
             </motion.div>
           ))}
+          {isSending && (
+            <motion.div
+              key="typing-indicator"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -8 }}
+              transition={{ duration: 0.2 }}
+              className="w-fit"
+            >
+              <TypingIndicator />
+            </motion.div>
+          )}
         </AnimatePresence>
       </div>
 

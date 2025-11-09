@@ -24,7 +24,15 @@ export interface FilterInput {
 
 export enum SortType {
   Ascending = "Ascending",
-  Descending = "Descending",
+  Descending = "Descending"
+}
+
+export interface SubDocument {
+  id?: string;
+
+  createdAt?: Date;
+
+  updatedAt?: Date;
 }
 
 export interface Document {
@@ -170,7 +178,7 @@ export enum Currency {
   SLL = "SLL",
   SHP = "SHP",
   WST = "WST",
-  XCD = "XCD",
+  XCD = "XCD"
 }
 
 export interface PaginationResponse<T> {
@@ -182,13 +190,13 @@ export interface PaginationResponse<T> {
 export enum ServerEventType {
   Event = "Event",
   Notification = "Notification",
-  ServerEventError = "ServerEventError",
+  ServerEventError = "ServerEventError"
 }
 
 export enum ServerEventEnum {
   AllModulesCreation = "AllModulesCreation",
   AllLessonsCreation = "AllLessonsCreation",
-  AsyncCourseCreation = "AsyncCourseCreation",
+  AsyncCourseCreation = "AsyncCourseCreation"
 }
 
 export interface ServerEvent {

@@ -138,8 +138,6 @@ const Wrapper: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         return null;
       }
 
-      console.log({ first: response.data.getUser });
-
       setUser(response.data.getUser);
 
       return response.data.getUser;

@@ -11,3 +11,75 @@ html {
     "Nunito Sans", "DM Sans", ui-sans-serif, system-ui, sans-serif !important;
   transition: all 0.4s ease !important;
 }
+
+/* Custom scrollbar styles for scrollable sections */
+.scrollable-summary::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scrollable-summary::-webkit-scrollbar-track {
+  background: transparent;
+  border-radius: 4px;
+}
+
+.scrollable-summary::-webkit-scrollbar-thumb {
+  background: #979797;
+  border-radius: 4px;
+}
+
+.scrollable-summary::-webkit-scrollbar-thumb:hover {
+  background: #7a7a7a;
+}
+
+/* Firefox scrollbar */
+.scrollable-summary {
+  scrollbar-width: thin;
+  scrollbar-color: #979797 transparent;
+}
+
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 1040;
+  background-color: #000;
+  opacity: 0;
+  visibility: hidden;
+}
+
+.modal-backdrop.show {
+  visibility: visible;
+  opacity: 0.5;
+}
+
+/* Typing indicator animation */
+@keyframes typing-bounce {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.7;
+  }
+  30% {
+    transform: translateY(-10px);
+    opacity: 1;
+  }
+}
+
+.typing-dot {
+  animation: typing-bounce 1.4s infinite ease-in-out;
+}
+
+.typing-dot:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.typing-dot:nth-child(2) {
+  animation-delay: 200ms;
+}
+
+.typing-dot:nth-child(3) {
+  animation-delay: 400ms;
+}
