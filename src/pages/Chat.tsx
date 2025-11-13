@@ -16,18 +16,8 @@ import {
 } from "../utilities/error-handling";
 import Progress from "../components/Progress";
 
-// const mockVideo = {
-//   videoId: "dQw4w9WgXcQ",
-//   title: "How to Study Smarter with YouTube Lectures",
-//   channel: "Learning Lab",
-//   publishedAt: "Apr 12, 2025",
-//   summary:
-//     "Discover a simple framework to turn any YouTube video into an interactive learning session. We'll cover active note-taking, timed reviews, and how to ask the right follow-up questions for deeper understanding.",
-//   tags: ["activelearning", "studyhacks", "yoututor"]
-// };
-
 const Chat = () => {
-  const params = useParams({ from: "/_layout/chat/$id" });
+  const params = useParams({ from: "/_layout/chat/$id/" });
 
   const [session, setSession] = useRecoilState(currentSessionState);
 

@@ -15,7 +15,8 @@ import { Route as LayoutRouteImport } from './routes/_layout'
 import { Route as LayoutIndexRouteImport } from './routes/_layout.index'
 import { Route as LayoutSettingsRouteImport } from './routes/_layout.settings'
 import { Route as LayoutChatIndexRouteImport } from './routes/_layout.chat.index'
-import { Route as LayoutChatIdRouteImport } from './routes/_layout.chat.$id'
+import { Route as LayoutChatIdIndexRouteImport } from './routes/_layout.chat.$id.index'
+import { Route as LayoutChatIdExportRouteImport } from './routes/_layout.chat.$id.export'
 
 const RegisterRoute = RegisterRouteImport.update({
   id: '/register',
@@ -46,9 +47,14 @@ const LayoutChatIndexRoute = LayoutChatIndexRouteImport.update({
   path: '/chat/',
   getParentRoute: () => LayoutRoute,
 } as any)
-const LayoutChatIdRoute = LayoutChatIdRouteImport.update({
-  id: '/chat/$id',
-  path: '/chat/$id',
+const LayoutChatIdIndexRoute = LayoutChatIdIndexRouteImport.update({
+  id: '/chat/$id/',
+  path: '/chat/$id/',
+  getParentRoute: () => LayoutRoute,
+} as any)
+const LayoutChatIdExportRoute = LayoutChatIdExportRouteImport.update({
+  id: '/chat/$id/export',
+  path: '/chat/$id/export',
   getParentRoute: () => LayoutRoute,
 } as any)
 
@@ -57,16 +63,18 @@ export interface FileRoutesByFullPath {
   '/register': typeof RegisterRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
-  '/chat/$id': typeof LayoutChatIdRoute
   '/chat': typeof LayoutChatIndexRoute
+  '/chat/$id/export': typeof LayoutChatIdExportRoute
+  '/chat/$id': typeof LayoutChatIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/settings': typeof LayoutSettingsRoute
   '/': typeof LayoutIndexRoute
-  '/chat/$id': typeof LayoutChatIdRoute
   '/chat': typeof LayoutChatIndexRoute
+  '/chat/$id/export': typeof LayoutChatIdExportRoute
+  '/chat/$id': typeof LayoutChatIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -75,14 +83,29 @@ export interface FileRoutesById {
   '/register': typeof RegisterRoute
   '/_layout/settings': typeof LayoutSettingsRoute
   '/_layout/': typeof LayoutIndexRoute
-  '/_layout/chat/$id': typeof LayoutChatIdRoute
   '/_layout/chat/': typeof LayoutChatIndexRoute
+  '/_layout/chat/$id/export': typeof LayoutChatIdExportRoute
+  '/_layout/chat/$id/': typeof LayoutChatIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/login' | '/register' | '/settings' | '/' | '/chat/$id' | '/chat'
+  fullPaths:
+    | '/login'
+    | '/register'
+    | '/settings'
+    | '/'
+    | '/chat'
+    | '/chat/$id/export'
+    | '/chat/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/register' | '/settings' | '/' | '/chat/$id' | '/chat'
+  to:
+    | '/login'
+    | '/register'
+    | '/settings'
+    | '/'
+    | '/chat'
+    | '/chat/$id/export'
+    | '/chat/$id'
   id:
     | '__root__'
     | '/_layout'
@@ -90,8 +113,9 @@ export interface FileRouteTypes {
     | '/register'
     | '/_layout/settings'
     | '/_layout/'
-    | '/_layout/chat/$id'
     | '/_layout/chat/'
+    | '/_layout/chat/$id/export'
+    | '/_layout/chat/$id/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -144,11 +168,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LayoutChatIndexRouteImport
       parentRoute: typeof LayoutRoute
     }
-    '/_layout/chat/$id': {
-      id: '/_layout/chat/$id'
+    '/_layout/chat/$id/': {
+      id: '/_layout/chat/$id/'
       path: '/chat/$id'
       fullPath: '/chat/$id'
-      preLoaderRoute: typeof LayoutChatIdRouteImport
+      preLoaderRoute: typeof LayoutChatIdIndexRouteImport
+      parentRoute: typeof LayoutRoute
+    }
+    '/_layout/chat/$id/export': {
+      id: '/_layout/chat/$id/export'
+      path: '/chat/$id/export'
+      fullPath: '/chat/$id/export'
+      preLoaderRoute: typeof LayoutChatIdExportRouteImport
       parentRoute: typeof LayoutRoute
     }
   }
@@ -157,15 +188,17 @@ declare module '@tanstack/react-router' {
 interface LayoutRouteChildren {
   LayoutSettingsRoute: typeof LayoutSettingsRoute
   LayoutIndexRoute: typeof LayoutIndexRoute
-  LayoutChatIdRoute: typeof LayoutChatIdRoute
   LayoutChatIndexRoute: typeof LayoutChatIndexRoute
+  LayoutChatIdExportRoute: typeof LayoutChatIdExportRoute
+  LayoutChatIdIndexRoute: typeof LayoutChatIdIndexRoute
 }
 
 const LayoutRouteChildren: LayoutRouteChildren = {
   LayoutSettingsRoute: LayoutSettingsRoute,
   LayoutIndexRoute: LayoutIndexRoute,
-  LayoutChatIdRoute: LayoutChatIdRoute,
   LayoutChatIndexRoute: LayoutChatIndexRoute,
+  LayoutChatIdExportRoute: LayoutChatIdExportRoute,
+  LayoutChatIdIndexRoute: LayoutChatIdIndexRoute,
 }
 
 const LayoutRouteWithChildren =

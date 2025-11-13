@@ -30,3 +30,8 @@ export const sessionListState = atom<PaginationResponse<Session>>({
     totalPages: 0
   }
 });
+
+export const exportSessionState = atom({
+  key: "exportSessionState",
+  default: defaultSession
+});

@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { ArrowUpRight, Send, Trash2 } from "lucide-react";
+import { ArrowUpRight, Send } from "lucide-react";
 import { useRecoilState } from "recoil";
-import { currentSessionState } from "../resources/session";
+import { currentSessionState, exportSessionState } from "../resources/session";
 import { MessageRole } from "../interfaces/session";
 import dayjs from "dayjs";
 import { useMutation } from "@apollo/client";
@@ -16,6 +16,7 @@ import {
   handleResponseErrors
 } from "../utilities/error-handling";
 import MessageContent from "./MessageContent";
+import { useNavigate } from "@tanstack/react-router";
 
 interface ChatPanelProps {
   className?: string;
@@ -37,7 +38,11 @@ const TypingIndicator = () => {
 };
 
 const ChatPanel = ({ className = "" }: ChatPanelProps) => {
+  const navigate = useNavigate();
+
   const [session, setSession] = useRecoilState(currentSessionState);
+
+  const [, setExportSession] = useRecoilState(exportSessionState);
 
   const [isSending, setIsSending] = useState(false);
 
@@ -151,19 +156,15 @@ const ChatPanel = ({ className = "" }: ChatPanelProps) => {
         <div className="flex items-center gap-3">
           <button
             type="button"
-            disabled
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray/30 text-gray cursor-not-allowed"
+            onClick={() => {
+              setExportSession(session);
+
+              navigate({ to: "/chat/$id/export", params: { id: session.id } });
+            }}
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-deepNavy/30 text-deepNavy hover:bg-deepNavy hover:text-white transition-colors"
           >
             <ArrowUpRight className="h-4 w-4" />
             Export
-          </button>
-          <button
-            type="button"
-            disabled
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl border border-gray/30 text-gray cursor-not-allowed"
-          >
-            <Trash2 className="h-4 w-4" />
-            Clear chat
           </button>
         </div>
       </div>
@@ -222,6 +223,12 @@ const ChatPanel = ({ className = "" }: ChatPanelProps) => {
           <textarea
             value={input}
             onChange={e => setInput(e.target.value)}
+            onKeyDown={e => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                handleSend();
+              }
+            }}
             placeholder="Ask YouTutor anything about this video..."
             rows={2}
             className="flex-1 resize-none rounded-2xl border border-gray/40 bg-white px-4 py-3 text-deepNavy placeholder:text-gray focus:outline-none focus:ring-2 focus:ring-[#BDF0E6]"
